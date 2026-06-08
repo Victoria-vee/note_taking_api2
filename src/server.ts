@@ -1,9 +1,13 @@
 import express, { Request, Response, NextFunction } from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import dns from 'dns';
 import noteRoutes from './controller';
 import { AppError } from './error';
+import { requestLogger } from './middleware';
+import authRoutes from './authroutes';
 
+dns.setDefaultResultOrder('ipv4first');
 dotenv.config();
 
 const app = express();
@@ -11,8 +15,10 @@ const PORT = process.env.PORT || 5000;
 const DATABASE_URI = process.env.DATABASE_URI || '';
 
 app.use(express.json());
-
+app.use(requestLogger);
 app.use('/api/notes', noteRoutes);
+app.use('/api/auth', authRoutes); 
+
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   if (err instanceof AppError) {
